@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>TrendCast | Smart Demand Forecasting</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- LEFT SIDE -->
+<div class="left">
+
+<img src="./illustration.jpeg" class="illustration">
+
+<p class="tagline">
+Predict Demand. Plan Smarter. Grow Faster
+</p>
+
+</div>
+
+
+<!-- RIGHT SIDE -->
+<div class="right">
+
+<div class="brand">
+
+<div class="logo">
+<img src="./logo.jpeg" class="logo">
+</div>
+
+<h1>TrendCast</h1>
+
+</div>
+
+
+<div class="auth-box">
+
+<div class="tabs">
+<button id="loginTab" class="active">Login</button>
+<button id="signupTab">Sign Up</button>
+</div>
+
+<!-- LOGIN -->
+<form id="loginForm" class="form">
+<input type="email" id="loginEmail" placeholder="Email" required>
+<input type="password" id="loginPassword" placeholder="Password" required>
+<button type="submit">Login</button>
+<p class="link" id="forgotLink">Forgot password?</p>
+</form>
+
+<!-- SIGNUP -->
+<form id="signupForm" class="form hidden">
+<input type="text" id="signupName" placeholder="Full Name" required>
+<input type="email" id="signupEmail" placeholder="Email" required>
+<input type="password" id="signupPassword" placeholder="Password" required>
+<input type="text" id="signupBusiness" placeholder="Business Type (optional)">
+<button type="submit">Create Account</button>
+</form>
+
+<!-- FORGOT -->
+<form id="forgotForm" class="form hidden">
+<input type="email" id="forgotEmail" placeholder="Enter your email" required>
+<button type="submit">Send OTP</button>
+<p class="link" id="backToLogin1">Back to login</p>
+</form>
+
+<!-- RESET -->
+<form id="resetForm" class="form hidden">
+<input type="text" id="resetOtp" placeholder="Enter OTP" required>
+<input type="password" id="resetPassword" placeholder="New Password" required>
+<button type="submit">Reset Password</button>
+<p class="link" id="backToLogin2">Back to login</p>
+</form>
+
+<p id="message"></p>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
