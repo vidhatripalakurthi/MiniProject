@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:5000/auth";
+const API = "/auth";
 
 const loginTab = document.getElementById("loginTab");
 const signupTab = document.getElementById("signupTab");
@@ -67,14 +67,10 @@ body:JSON.stringify({email,password})
 });
 
 const data = await res.json();
-
+loginForm.querySelector("button").disabled = true;
 if(data.success){
 
 localStorage.setItem("token",data.token);
-
-message.style.color="green";
-message.textContent="Login successful! Redirecting...";
-
 setTimeout(()=>{
 window.location.href="home.html";
 },1000);

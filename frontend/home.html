@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>TrendCast Dashboard</title>
+
+<link rel="stylesheet" href="home.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+<div class="logo-section">
+
+<img src="logo.jpeg" class="logo">
+
+<h2>TrendCast</h2>
+
+</div>
+
+<ul class="menu">
+
+<li class="active" onclick="showSection('dashboard')">Dashboard</li>
+
+<li onclick="showSection('cleanData')">Clean Data</li>
+
+<li onclick="showSection('forecast')">Forecast</li>
+
+<li onclick="showSection('history')">History</li>
+
+<li id="logoutBtn">Logout</li>
+
+</ul>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+
+<div class="main">
+
+<!-- DASHBOARD SECTION -->
+
+<div id="dashboard" class="section active">
+
+<h1>Dashboard</h1>
+
+<p class="subtitle">
+Summary of your previously processed datasets
+</p>
+
+<div class="cards">
+
+<div class="card">
+<h3>Datasets Uploaded</h3>
+<p id="datasetCount">0</p>
+</div>
+
+<div class="card">
+<h3>Products Detected</h3>
+<p id="productCount">0</p>
+</div>
+
+<div class="card">
+<h3>Forecasts Generated</h3>
+<p id="forecastCount">0</p>
+</div>
+
+<div class="card">
+<h3>Last Upload</h3>
+<p id="lastUpload">None</p>
+</div>
+
+</div>
+
+
+<!-- UPDATED UPLOAD DATASET SECTION -->
+
+<div class="upload-box">
+
+<h2>Upload Dataset</h2>
+
+<div class="upload-area" id="uploadArea">
+
+<div class="upload-icon">☁</div>
+
+<p>Drag and drop or click to upload</p>
+
+<input type="file" id="datasetFile" hidden accept=".csv,.xlsx">
+
+<button class="browse-btn">Browse CSV / Excel File</button>
+
+</div>
+
+<p class="upload-text">
+Upload historical sales or demand data for forecasting.
+Supported formats: CSV or Excel files containing time-based demand values.
+</p>
+
+<button id="cleanDataBtn" class="clean-btn">
+Clean Data
+</button>
+
+</div>
+
+</div>
+
+
+<!-- CLEAN DATA SECTION -->
+
+<div id="cleanData" class="section">
+
+<h1>Clean Data</h1>
+
+<p>Dataset preview after preprocessing</p>
+
+<div class="placeholder">
+
+Cleaned dataset table will appear here.
+
+</div>
+
+</div>
+
+
+<!-- FORECAST SECTION -->
+
+<div id="forecast" class="section">
+
+<h1>Forecast Results</h1>
+
+<div class="placeholder">
+
+Forecast charts and reports will appear here.
+
+</div>
+
+</div>
+
+
+<!-- HISTORY SECTION -->
+
+<div id="history" class="section">
+
+<h1>Forecast History</h1>
+
+<div class="placeholder">
+
+Previous forecasts will appear here.
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="home.js"></script>
+
+</body>
+</html>
