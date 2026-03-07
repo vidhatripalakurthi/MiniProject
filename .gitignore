@@ -47,3 +47,5 @@ build/
 *.pkl
 *.joblib
 *.h5
+backend/cleandata
+backend/uploads
