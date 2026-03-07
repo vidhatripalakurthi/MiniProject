@@ -49,4 +49,4 @@ build/
 *.h5
 backend/cleandata
 backend/uploads
-postman
+.postman
