@@ -1,4 +1,4 @@
-const API = "/auth";
+const API = "http://127.0.0.1:5000/auth";
 
 const loginTab = document.getElementById("loginTab");
 const signupTab = document.getElementById("signupTab");
@@ -53,12 +53,17 @@ message.textContent="";
 
 /* LOGIN */
 
-loginForm.onsubmit = async (e)=>{
+loginForm.onsubmit = async (e) => {
 
 e.preventDefault();
 
+const button = loginForm.querySelector("button");
+button.disabled = true;
+
 const email = loginEmail.value;
 const password = loginPassword.value;
+
+try{
 
 const res = await fetch(`${API}/login`,{
 method:"POST",
@@ -67,25 +72,35 @@ body:JSON.stringify({email,password})
 });
 
 const data = await res.json();
-loginForm.querySelector("button").disabled = true;
+
 if(data.success){
 
 localStorage.setItem("token",data.token);
+
+message.style.color="green";
+message.textContent="Login successful...";
+
 setTimeout(()=>{
 window.location.href="home.html";
-},1000);
+},800);
 
-}
-
-else{
+}else{
 
 message.style.color="red";
-message.textContent=data.message;
+message.textContent=data.message || "Login failed";
 
 }
 
-};
+}catch(err){
 
+message.style.color="red";
+message.textContent="Server error. Is backend running?";
+
+}
+
+button.disabled = false;
+
+};
 
 
 /* SIGNUP */
