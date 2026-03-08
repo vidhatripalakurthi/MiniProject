@@ -2,165 +2,84 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
-<title>TrendCast Dashboard</title>
+<title>TrendCast</title>
 
 <link rel="stylesheet" href="home.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 </head>
 
 <body>
 
-<div class="dashboard">
+<div class="container">
 
-<!-- SIDEBAR -->
-
-<div class="sidebar">
-
-<div class="logo-section">
-
-<img src="logo.jpeg" class="logo">
-
+<header>
 <h2>TrendCast</h2>
-
-</div>
-
-<ul class="menu">
-
-<li class="active" onclick="showSection('dashboard')">Dashboard</li>
-
-<li onclick="showSection('cleanData')">Clean Data</li>
-
-<li onclick="showSection('forecast')">Forecast</li>
-
-<li onclick="showSection('history')">History</li>
-
-<li id="logoutBtn">Logout</li>
-
-</ul>
-
-</div>
-
-
-<!-- MAIN CONTENT -->
-
-<div class="main">
-
-<!-- DASHBOARD SECTION -->
-
-<div id="dashboard" class="section active">
+</header>
 
 <h1>Dashboard</h1>
 
-<p class="subtitle">
-Summary of your previously processed datasets
-</p>
+<!-- SUMMARY CARDS -->
 
 <div class="cards">
 
 <div class="card">
-<h3>Datasets Uploaded</h3>
-<p id="datasetCount">0</p>
+<h3>Total Uploads</h3>
+<p id="totalUploads">0</p>
 </div>
 
 <div class="card">
-<h3>Products Detected</h3>
-<p id="productCount">0</p>
+<h3>Products</h3>
+<p id="totalProducts">0</p>
 </div>
 
 <div class="card">
-<h3>Forecasts Generated</h3>
-<p id="forecastCount">0</p>
-</div>
-
-<div class="card">
-<h3>Last Upload</h3>
-<p id="lastUpload">None</p>
+<h3>Forecast Runs</h3>
+<p id="forecastRuns">0</p>
 </div>
 
 </div>
 
-
-<!-- UPDATED UPLOAD DATASET SECTION -->
+<!-- UPLOAD DATASET -->
 
 <div class="upload-box">
 
 <h2>Upload Dataset</h2>
 
-<div class="upload-area" id="uploadArea">
+<div id="uploadContainer">
+
+<div id="uploadArea" class="upload-area">
 
 <div class="upload-icon">☁</div>
 
 <p>Drag and drop or click to upload</p>
 
-<input type="file" id="datasetFile" hidden accept=".csv,.xlsx">
-
-<button class="browse-btn">Browse CSV / Excel File</button>
+<button type="button" class="browse-btn">Browse CSV / Excel</button>
 
 </div>
 
-<p class="upload-text">
-Upload historical sales or demand data for forecasting.
-Supported formats: CSV or Excel files containing time-based demand values.
-</p>
+<input type="file" id="datasetFile" hidden accept=".csv,.xlsx">
 
-<button id="cleanDataBtn" class="clean-btn">
-Clean Data
+</div>
+
+<button type="button" id="uploadBtn" class="action-btn">
+Preview Dataset
 </button>
 
 </div>
 
-</div>
+<!-- RAW PREVIEW -->
 
+<div id="rawPreviewContainer" class="upload-box" style="display:none">
 
-<!-- CLEAN DATA SECTION -->
+<h2>Raw Dataset Preview</h2>
 
-<div id="cleanData" class="section">
+<div id="rawTable"></div>
 
-<h1>Clean Data</h1>
-
-<p>Dataset preview after preprocessing</p>
-
-<div class="placeholder">
-
-Cleaned dataset table will appear here.
-
-</div>
-
-</div>
-
-
-<!-- FORECAST SECTION -->
-
-<div id="forecast" class="section">
-
-<h1>Forecast Results</h1>
-
-<div class="placeholder">
-
-Forecast charts and reports will appear here.
-
-</div>
-
-</div>
-
-
-<!-- HISTORY SECTION -->
-
-<div id="history" class="section">
-
-<h1>Forecast History</h1>
-
-<div class="placeholder">
-
-Previous forecasts will appear here.
-
-</div>
-
-</div>
+<button type="button" id="cleanDataBtn" class="action-btn">
+Clean Data
+</button>
 
 </div>
 

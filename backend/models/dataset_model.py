@@ -4,9 +4,19 @@ from config import db
 
 class Dataset:
 
+    # -----------------------------
+    # CREATE DATASET RECORD
+    # -----------------------------
     @staticmethod
-    def create_dataset(user_id, dataset_id, original_filename, clean_file,
-                       rows, products, date_range):
+    def create_dataset(
+        user_id,
+        dataset_id,
+        original_filename,
+        clean_file,
+        rows,
+        products,
+        date_range
+    ):
 
         dataset = {
             "user_id": user_id,
@@ -24,25 +34,44 @@ class Dataset:
         return dataset
 
 
+    # -----------------------------
+    # GET ALL DATASETS
+    # -----------------------------
     @staticmethod
     def get_all_datasets():
-        datasets = list(db.datasets.find({}, {"_id": 0}))
+
+        datasets = list(
+            db.datasets.find({}, {"_id": 0})
+        )
+
         return datasets
 
 
+    # -----------------------------
+    # GET USER DATASETS
+    # -----------------------------
     @staticmethod
     def get_user_datasets(user_id):
-        datasets = list(db.datasets.find(
-            {"user_id": user_id},
-            {"_id": 0}
-        ))
+
+        datasets = list(
+            db.datasets.find(
+                {"user_id": user_id},
+                {"_id": 0}
+            )
+        )
+
         return datasets
 
 
+    # -----------------------------
+    # GET DATASET BY ID
+    # -----------------------------
     @staticmethod
     def get_dataset_by_id(dataset_id):
+
         dataset = db.datasets.find_one(
             {"dataset_id": dataset_id},
             {"_id": 0}
         )
+
         return dataset

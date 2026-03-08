@@ -1,133 +1,144 @@
-// -------------------------------
-// FILE UPLOAD AREA HANDLING
-// -------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+
+let selectedFile = null;
 
 const uploadArea = document.getElementById("uploadArea");
 const fileInput = document.getElementById("datasetFile");
+const uploadContainer = document.getElementById("uploadContainer");
+const uploadBtn = document.getElementById("uploadBtn");
+const rawPreviewContainer = document.getElementById("rawPreviewContainer");
+const rawTable = document.getElementById("rawTable");
+const cleanBtn = document.getElementById("cleanDataBtn");
 
-if (uploadArea && fileInput) {
+
+// -----------------------------
+// FILE PICKER
+// -----------------------------
 
 uploadArea.addEventListener("click", () => {
     fileInput.click();
 });
 
-fileInput.addEventListener("change", handleFile);
+fileInput.addEventListener("change", () => {
 
-uploadArea.addEventListener("dragover", (e) => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    selectedFile = file;
+
+    uploadContainer.innerHTML = `
+        <div class="file-selected">
+            <span>${file.name}</span>
+            <span class="remove-file" id="removeFileBtn">✕</span>
+        </div>
+    `;
+
+    document.getElementById("removeFileBtn").addEventListener("click", () => {
+        location.reload();
+    });
+
+});
+
+
+// -----------------------------
+// PREVIEW DATASET
+// -----------------------------
+
+uploadBtn.addEventListener("click", (e) => {
+
     e.preventDefault();
-    uploadArea.style.background = "#eef4ff";
+
+    if (!selectedFile) {
+        alert("Select dataset first");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (ev) => {
+
+        const rows = ev.target.result.split("\n").slice(0, 15);
+
+        let table = "<div class='table-wrapper'><table class='data-table'><tbody>";
+
+        rows.forEach(row => {
+
+            table += "<tr>";
+
+            row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).forEach(col => {
+                table += `<td>${col}</td>`;
+            });
+
+            table += "</tr>";
+
+        });
+
+        table += "</tbody></table></div>";
+
+        rawPreviewContainer.style.display = "block";
+        rawTable.innerHTML = table;
+
+    };
+
+    reader.readAsText(selectedFile);
+
 });
 
-uploadArea.addEventListener("dragleave", () => {
-    uploadArea.style.background = "#f6f9ff";
-});
 
-uploadArea.addEventListener("drop", (e) => {
+// -----------------------------
+// CLEAN DATA
+// -----------------------------
+
+cleanBtn.addEventListener("click", async (e) => {
+
     e.preventDefault();
 
-    const file = e.dataTransfer.files[0];
-    validateFile(file);
-});
-}
+    if (!selectedFile) {
+        alert("Upload dataset first");
+        return;
+    }
 
-// -------------------------------
-// HANDLE FILE SELECT
-// -------------------------------
+    cleanBtn.innerText = "Processing...";
+    cleanBtn.disabled = true;
 
-function handleFile() {
-const file = fileInput.files[0];
-validateFile(file);
-}
+    try {
 
-// -------------------------------
-// FILE VALIDATION
-// -------------------------------
+        const token = localStorage.getItem("token");
 
-function validateFile(file) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
 
-if (!file) return;
+        const res = await fetch("http://127.0.0.1:5000/upload-dataset", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            body: formData
+        });
 
-const allowed = ["csv", "xlsx", "xls"];
+        const data = await res.json();
 
-const ext = file.name.split(".").pop().toLowerCase();
+        if (!res.ok) {
+            alert(data.message || "Dataset preprocessing failed");
+            cleanBtn.innerText = "Clean Data";
+            cleanBtn.disabled = false;
+            return;
+        }
 
-if (!allowed.includes(ext)) {
-    alert("Only CSV or Excel files are allowed.");
-    fileInput.value = "";
-    return;
-}
+        localStorage.setItem("cleanData", JSON.stringify(data));
 
-alert("Dataset selected: " + file.name);
+        window.location.href = "cleandata.html";
 
-// After validation upload automatically
-uploadDataset(file);
+    } catch (error) {
 
-}
+        console.error("Fetch error:", error);
+        alert("Server error during preprocessing");
 
-// -------------------------------
-// DATASET UPLOAD API CALL
-// -------------------------------
+        cleanBtn.innerText = "Clean Data";
+        cleanBtn.disabled = false;
 
-async function uploadDataset(file){
+    }
 
-try{
-
-const token = localStorage.getItem("token");
-
-if(!token){
-    alert("You are not logged in.");
-    window.location.href = "index.html";
-    return;
-}
-
-const formData = new FormData();
-formData.append("file", file);
-
-const response = await fetch("http://127.0.0.1:5000/upload-dataset",{
-    method: "POST",
-    headers:{
-        "Authorization": "Bearer " + token
-    },
-    body: formData
 });
 
-const data = await response.json();
-
-if(response.ok){
-
-    alert("Dataset uploaded successfully!");
-
-    console.log("Upload response:", data);
-
-}else{
-
-    alert("Upload failed: " + data.message);
-
-}
-
-}catch(error){
-
-console.error("Upload error:",error);
-alert("Something went wrong while uploading dataset.");
-
-}
-
-}
-
-// -------------------------------
-// LOGOUT BUTTON
-// -------------------------------
-
-const logoutBtn = document.getElementById("logoutBtn");
-
-if(logoutBtn){
-
-logoutBtn.onclick = () => {
-
-localStorage.removeItem("token");
-
-window.location.href = "index.html";
-
-};
-
-}
+});
