@@ -198,3 +198,45 @@ def reset_password():
         "success": True,
         "message": "Password reset successful"
     }), 200
+from utils.jwt_helper import token_required
+from models.dataset_model import Dataset
+from bson.objectid import ObjectId
+
+# -----------------------------
+# GET CURRENT USER & STATS
+# -----------------------------
+@auth_bp.route("/me", methods=["GET"])
+@token_required
+def get_current_user(current_user):
+    # 'current_user' is the ID passed from your token_required decorator
+    user = db.users.find_one({"_id": ObjectId(current_user)}, {"password": 0})
+    
+    if not user:
+        return jsonify({"success": False, "message": "User not found"}), 404
+
+    # Fetch user's specific datasets
+    datasets = Dataset.get_user_datasets(current_user)
+    total_datasets = len(datasets)
+
+    # Count unique products across all user's datasets
+    unique_products = set()
+    for ds in datasets:
+        unique_products.update(ds.get("products", []))
+
+    # Count total forecasts tied to this user's datasets
+    dataset_ids = [ds["dataset_id"] for ds in datasets]
+    total_forecasts = db.forecasts.count_documents({"dataset_id": {"$in": dataset_ids}})
+
+    return jsonify({
+        "success": True,
+        "user": {
+            "name": user.get("name", "User"),
+            "email": user.get("email", ""),
+            "business_type": user.get("business_type", "")
+        },
+        "stats": {
+            "datasets": total_datasets,
+            "forecasts": total_forecasts,
+            "products": len(unique_products)
+        }
+    }), 200
