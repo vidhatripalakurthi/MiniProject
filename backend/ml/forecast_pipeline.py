@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from ml.prophet_model import run_prophet_model
 from ml.arima_model import run_arima_model
@@ -165,29 +166,14 @@ def run_best_model_full(product_df, best_model, forecast_months=6):
 
 
 # -------------------------
-# MAIN PIPELINE
+# SINGLE THREAD WORKER
 # -------------------------
-def run_forecast_pipeline(file_path, selected_product):
-
-    df = pd.read_csv(file_path)
-
-    if selected_product == "All Products":
-        products = df["Product"].unique()
-
-    elif isinstance(selected_product, list):
-        products = selected_product
-
-    else:
-        products = [selected_product]
-
-    results = {}
-
-    for product in products:
-
+def process_single_product(df, product):
+    try:
         product_df = prepare_time_series(df, product)
 
         if product_df is None:
-            continue
+            return product, None
 
         train, test = train_test_split_time_series(product_df)
 
@@ -202,11 +188,40 @@ def run_forecast_pipeline(file_path, selected_product):
         # Run best model on FULL DATA
         forecast_values = run_best_model_full(product_df, best_model)
 
-        results[product] = {
+        return product, {
             "metrics": metrics,
             "best_model": best_model,
             "confidence": confidence,
             "forecast": forecast_values.tolist()
         }
+    except Exception as e:
+        print(f"Pipeline failed for {product}: {str(e)}")
+        return product, None
+
+
+# -------------------------
+# MAIN PIPELINE
+# -------------------------
+def run_forecast_pipeline(file_path, selected_product):
+
+    df = pd.read_csv(file_path)
+
+    if selected_product == "All Products":
+        products = df["Product"].unique().tolist()
+    elif isinstance(selected_product, list):
+        products = selected_product
+    else:
+        products = [selected_product]
+
+    results = {}
+
+    # Run in parallel to cut processing time by up to 4x
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {executor.submit(process_single_product, df, prod): prod for prod in products}
+        
+        for future in as_completed(futures):
+            prod, result = future.result()
+            if result:
+                results[prod] = result
 
     return results

@@ -5,6 +5,7 @@ from config import db
 from ml.forecast_pipeline import run_forecast_pipeline
 from models.dataset_model import Dataset
 from models.forecast_model import Forecast
+from utils.jwt_helper import token_required
 
 forecast_bp = Blueprint("forecast", __name__)
 
@@ -13,8 +14,6 @@ def generate_forecast():
     try:
         data = request.json
         dataset_id = data.get("dataset_id")
-        
-        # 'product' could now be a string ("Milk") or a list (["Milk", "Bread"])
         product_payload = data.get("product") 
 
         if not dataset_id:
@@ -24,57 +23,84 @@ def generate_forecast():
         if not dataset:
             return jsonify({"success": False, "message": "Dataset not found"}), 404
 
-        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        clean_path = os.path.join(BASE_DIR, "cleandata", dataset["clean_file"])
-
-        # Run pipeline (handles both string and list natively)
-        results = run_forecast_pipeline(
-            file_path=clean_path,
-            selected_product=product_payload
-        )
+        # Normalize product payload
+        if product_payload == "All Products":
+            products_requested = dataset.get("products", [])
+        elif isinstance(product_payload, list):
+            products_requested = product_payload
+        else:
+            products_requested = [product_payload]
 
         response_data = {}
+        products_to_run = []
 
-        for product_name, result in results.items():
-            forecast_values = result["forecast"]
+        # -----------------------------
+        # 1. CACHE HIT CHECK (SPEED OPTIMIZATION)
+        # -----------------------------
+        for prod in products_requested:
+            existing_forecast = Forecast.get_product_forecast(dataset_id, prod)
+            if existing_forecast:
+                print(f"Cache Hit! Loading {prod} from DB.")
+                response_data[prod] = {
+                    "confidence": existing_forecast["confidence"],
+                    "preview": existing_forecast["forecast_data"][:8],
+                    "full_forecast": existing_forecast["forecast_data"]
+                }
+            else:
+                products_to_run.append(prod)
 
-            df = pd.read_csv(clean_path)
-            df["Date"] = pd.to_datetime(df["Date"])
-            last_date = df["Date"].max()
+        # -----------------------------
+        # 2. RUN ML FOR MISSING PRODUCTS
+        # -----------------------------
+        if products_to_run:
+            print(f"Running ML Pipeline for {len(products_to_run)} products...")
+            BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            clean_path = os.path.join(BASE_DIR, "cleandata", dataset["clean_file"])
 
-            future_dates = pd.date_range(
-                start=last_date + pd.Timedelta(weeks=1),
-                periods=len(forecast_values),
-                freq="W"
+            results = run_forecast_pipeline(
+                file_path=clean_path,
+                selected_product=products_to_run
             )
 
-            week_ranges = []
-            for date in future_dates:
-                start_date = date.strftime("%d-%m-%Y")
-                end_date = (date + pd.Timedelta(days=6)).strftime("%d-%m-%Y")
-                week_ranges.append(f"{start_date} to {end_date}")
+            for product_name, result in results.items():
+                forecast_values = result["forecast"]
 
-            forecast_df = pd.DataFrame({
-                "Week": week_ranges,
-                "Product": product_name,
-                "Forecast_Demand": forecast_values
-            })
+                df = pd.read_csv(clean_path)
+                df["Date"] = pd.to_datetime(df["Date"])
+                last_date = df["Date"].max()
 
-            forecast_records = forecast_df.to_dict(orient="records")
+                future_dates = pd.date_range(
+                    start=last_date + pd.Timedelta(weeks=1),
+                    periods=len(forecast_values),
+                    freq="W"
+                )
 
-            # This now uses the safe UPSERT method
-            Forecast.create_forecast(
-                dataset_id=dataset_id,
-                product=product_name,
-                confidence=result["confidence"],
-                forecast_data=forecast_records
-            )
+                week_ranges = []
+                for date in future_dates:
+                    start_date = date.strftime("%d-%m-%Y")
+                    end_date = (date + pd.Timedelta(days=6)).strftime("%d-%m-%Y")
+                    week_ranges.append(f"{start_date} to {end_date}")
 
-            response_data[product_name] = {
-                "confidence": result["confidence"],
-                "preview": forecast_records[:8],
-                "full_forecast": forecast_records 
-            }
+                forecast_df = pd.DataFrame({
+                    "Week": week_ranges,
+                    "Product": product_name,
+                    "Forecast_Demand": forecast_values
+                })
+
+                forecast_records = forecast_df.to_dict(orient="records")
+
+                Forecast.create_forecast(
+                    dataset_id=dataset_id,
+                    product=product_name,
+                    confidence=result["confidence"],
+                    forecast_data=forecast_records
+                )
+
+                response_data[product_name] = {
+                    "confidence": result["confidence"],
+                    "preview": forecast_records[:8],
+                    "full_forecast": forecast_records 
+                }
 
         return jsonify({"success": True, "results": response_data})
 
@@ -103,7 +129,7 @@ def download_forecast(dataset_id, product):
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-from utils.jwt_helper import token_required
+
 
 @forecast_bp.route("/user-forecasts", methods=["GET"])
 @token_required

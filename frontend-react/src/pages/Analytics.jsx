@@ -46,7 +46,7 @@ const Analytics = () => {
     // UI States
     const [selectedProducts, setSelectedProducts] = useState(availableProducts);
     const [chartType, setChartType] = useState('Area'); 
-    const [timeframe, setTimeframe] = useState('Weekly'); // Weekly, Monthly, Quarterly
+    const [timeframe, setTimeframe] = useState('Monthly'); // <-- CHANGED TO MONTHLY DEFAULT
 
     // 1. Merge & Aggregate Data
     const { chartData, maxPoints, minPoints } = useMemo(() => {
@@ -73,18 +73,23 @@ const Analytics = () => {
                 const [day, month, year] = dateStr.split('-');
                 let key = dateStr;
                 let displayDate = dateStr;
+                
+                // STRICT CHRONOLOGICAL SORT KEY
+                let sortableKey = `${year}-${month}-${day}`; 
 
                 if (timeframe === 'Monthly') {
                     key = `${year}-${month}`;
                     displayDate = `${month}-${year}`;
+                    sortableKey = key;
                 } else if (timeframe === 'Quarterly') {
                     const q = Math.ceil(parseInt(month) / 3);
                     key = `${year}-Q${q}`;
                     displayDate = `Q${q} ${year}`;
+                    sortableKey = key;
                 }
 
                 if (!groupedData[key]) {
-                    groupedData[key] = { date: displayDate, sortKey: key };
+                    groupedData[key] = { date: displayDate, sortKey: sortableKey };
                 }
                 
                 // Add up values for aggregated timeframes
@@ -93,6 +98,7 @@ const Analytics = () => {
         });
 
         // Second pass: Calculate Min/Max and Convert to Array
+        // Sorted strictly by YYYY-MM-DD
         const mergedArray = Object.values(groupedData).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
 
         mergedArray.forEach(row => {
